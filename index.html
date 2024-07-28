@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Меннеджер паролей</title>
+</head>
+<style>
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: sans-serif;
+        line-height: 1.5;
+        min-height: 100vh;
+        background: #f3f3f3;
+        flex-direction: column;
+        margin: 0;
+    }
+
+    .main {
+        background-color: #fff;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        padding: 10px 20px;
+        transition: transform 0.2s;
+        width: 500px;
+        text-align: center;
+    }
+
+    h1 {
+        color: #4CAF50;
+    }
+
+    label {
+        display: block;
+        width: 100%;
+        margin-top: 10px;
+        margin-bottom: 5px;
+        text-align: left;
+        color: #555;
+        font-weight: bold;
+    }
+
+
+    input {
+        display: block;
+        width: 100%;
+        margin-bottom: 15px;
+        padding: 10px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    button {
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        border: none;
+        color: white;
+        cursor: pointer;
+        background-color: #4CAF50;
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .wrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .password-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .password-item {
+            background-color: white;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .password-item .info {
+            flex-grow: 1;
+        }
+        .password-item button {
+            background-color: #dc3545;
+            margin-left: 10px;
+        }
+        .password-item button:hover {
+            background-color: #c82333;
+        }
+        .password-item .show-password {
+            background-color: #007bff;
+            margin-left: 10px;
+        }
+        .password-item .show-password:hover {
+            background-color: #0056b3;
+        }
+</style>
+
+<body>
+    <div class="main">
+        <h1>Меннеджер паролей</h1>
+        <form id="password-form">
+            <label for="login">
+                Логин:
+            </label>
+            <input type="text" id="login" placeholder="Введите свой логин" required>
+
+            <label for="password">
+                Пароль:
+            </label>
+            <input type="password" id="password" placeholder="Введите свой пароль" required>
+
+            <label for="url">
+                URL:
+            </label>
+            <input type="url" id="url" placeholder="Введите свой url" required>
+
+            <div class="wrap">
+                <button type="submit" onclick="solve()"> Подтвердить </button>
+            </div>
+        </form>
+    </div>
+    <ul id="password-list" class="password-list"></ul>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const passwordForm = document.getElementById('password-form');
+            const passwordList = document.getElementById('password-list');
+
+
+            const savedPasswords = JSON.parse(localStorage.getItem('passwords')) || [];
+
+
+            function renderPasswords() {
+                passwordList.innerHTML = '';
+                savedPasswords.forEach((passwordItem, index) => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'password-item';
+                    listItem.innerHTML = `
+                        <div class="info">
+                            <span><strong>Login:</strong> ${passwordItem.login}</span><br>
+                            <span><strong>URL:</strong> <a href="${passwordItem.url}" target="_blank">${passwordItem.url}</a></span><br>
+                            <span><strong>Password:</strong> <span class="password" data-index="${index}">****</span></span>
+                        </div>
+                        <button class="show-password" onclick="togglePassword(${index})">Показать пароль</button>
+                        <button onclick="deletePassword(${index})">Удалить</button>
+                    `;
+                    passwordList.appendChild(listItem);
+                });
+            }
+
+            window.togglePassword = function (index) {
+                const passwordSpan = document.querySelector(`.password[data-index="${index}"]`);
+                const passwordItem = savedPasswords[index];
+                if (passwordSpan.textContent === '****') {
+                    passwordSpan.textContent = passwordItem.password;
+                } else {
+                    passwordSpan.textContent = '****';
+                }
+            }
+
+            window.deletePassword = function (index) {
+                savedPasswords.splice(index, 1);
+                localStorage.setItem('passwords', JSON.stringify(savedPasswords));
+                renderPasswords();
+            }
+
+            passwordForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const login = document.getElementById('login').value;
+                const password = document.getElementById('password').value;
+                const url = document.getElementById('url').value;
+
+                const passwordItem = { login, password, url };
+                savedPasswords.push(passwordItem);
+                localStorage.setItem('passwords', JSON.stringify(savedPasswords));
+                renderPasswords();
+
+                passwordForm.reset();
+            });
+
+            renderPasswords();
+        });
+    </script>
+</body>
+
+</html>
